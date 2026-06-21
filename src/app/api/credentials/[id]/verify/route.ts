@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { safeErrorMessage } from "@/lib/veritable/errors";
 import { getEnv } from "@/lib/veritable/env";
 import { verify } from "@/lib/veritable/service";
 import { getCredential } from "@/lib/veritable/store";
@@ -39,12 +40,8 @@ export async function POST(_request: NextRequest, ctx: VerifyRouteContext) {
     );
     return NextResponse.json({ verification, proof });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Verification failed.";
-    return NextResponse.json(
-      { error: message, proof },
-      { status: 502 },
-    );
+    const safe = safeErrorMessage(error, "Verification failed.");
+    return NextResponse.json({ error: safe, proof }, { status: 502 });
   }
 }
 

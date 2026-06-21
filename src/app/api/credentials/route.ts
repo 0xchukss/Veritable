@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { buildArtifact } from "@/lib/veritable/artifact";
+import { safeErrorMessage } from "@/lib/veritable/errors";
 import { getEnv } from "@/lib/veritable/env";
 import { issue } from "@/lib/veritable/service";
 import { listCredentials } from "@/lib/veritable/store";
@@ -121,8 +122,9 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ credential: issued.credential, proof: issued.proof });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to archive credential.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    // Sanitize: never surface raw upstream/SDK messages (may leak RPC URLs or
+    // internal detail). Map known recoverable states to honest user messages.
+    const safe = safeErrorMessage(error, "Failed to commit the credential to storage.");
+    return NextResponse.json({ error: safe }, { status: 502 });
   }
 }
