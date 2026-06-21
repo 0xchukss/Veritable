@@ -34,6 +34,15 @@ yarn-error.log*
 /dev.err.log
 /phase1-*.png
 
+# transient test/debug artifacts at repo root
+/a1.json
+/v1.json
+/r*.txt
+/big.txt
+/cred_id.txt
+/issue.json
+/verify.json
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
