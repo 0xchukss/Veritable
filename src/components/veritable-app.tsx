@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Nav } from "./nav";
