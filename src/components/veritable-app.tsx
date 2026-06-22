@@ -570,9 +570,11 @@ function Check({ label, ok }: { label: string; ok: boolean }) {
 
 function ShareLink({ credentialId }: { credentialId: string }) {
   const [copied, setCopied] = useState(false);
-  const url = typeof window !== "undefined"
-    ? `${window.location.origin}/verify/${credentialId}`
-    : `/verify/${credentialId}`;
+  const [url, setUrl] = useState("");
+
+  useEffect(() => {
+    setUrl(`${window.location.origin}/verify/${credentialId}`);
+  }, [credentialId]);
 
   const copy = () => {
     navigator.clipboard.writeText(url);

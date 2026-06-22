@@ -126,17 +126,33 @@ export class ZeroGCredentialArchive implements CredentialArchive {
 
       const buffer = await blob.arrayBuffer();
       let credential: Credential | null = null;
+      let merkleProofVerified = false;
+      
       try {
-        credential = JSON.parse(new TextDecoder().decode(buffer)) as Credential;
+        const text = new TextDecoder().decode(buffer);
+        // Remove trailing null bytes (padding from 0G storage or AES)
+        const cleanText = text.replace(/\0+$/, "");
+        credential = JSON.parse(cleanText) as Credential;
+        
+        // Re-encode without the padding to check the Merkle tree
+        const unpaddedBuffer = new TextEncoder().encode(cleanText);
+        const file = new MemData(unpaddedBuffer);
+        const [tree, treeError] = await file.merkleTree();
+        
+        // Check if the clean buffer matches
+        if (!treeError && tree?.rootHash() === proof.rootHash) {
+          merkleProofVerified = true;
+        } else {
+          // Fallback: check if the original downloaded padded buffer matches
+          const originalFile = new MemData(new Uint8Array(buffer));
+          const [origTree] = await originalFile.merkleTree();
+          if (origTree?.rootHash() === proof.rootHash) {
+             merkleProofVerified = true;
+          }
+        }
       } catch {
         // A wrong decryption key returns ciphertext rather than throwing.
       }
-
-      // Explicitly validate the Merkle tree of the downloaded data
-      // rather than blindly trusting the download call.
-      const file = new MemData(new Uint8Array(buffer));
-      const [tree, treeError] = await file.merkleTree();
-      const merkleProofVerified = !treeError && tree?.rootHash() === proof.rootHash;
 
       return {
         mode: "0g",
