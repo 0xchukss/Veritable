@@ -23,7 +23,7 @@ interface VerifyRouteContext {
  */
 export async function POST(_request: NextRequest, ctx: VerifyRouteContext) {
   const { id } = await ctx.params;
-  const stored = getCredential(id);
+  const stored = await getCredential(id);
   if (!stored) {
     return NextResponse.json(
       { error: "No credential found with that id." },
@@ -48,7 +48,7 @@ export async function POST(_request: NextRequest, ctx: VerifyRouteContext) {
 /** Expose the configured storage mode so the UI can label local vs 0g. */
 export async function GET(_request: NextRequest, ctx: VerifyRouteContext) {
   const { id } = await ctx.params;
-  const stored = getCredential(id);
+  const stored = await getCredential(id);
   if (!stored) {
     return NextResponse.json(
       { error: "No credential found with that id." },

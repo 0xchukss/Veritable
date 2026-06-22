@@ -99,7 +99,7 @@ export class ZeroGCredentialArchive implements CredentialArchive {
       throw new Error("The storage proof does not include a transaction hash.");
     }
 
-    const [{ Indexer }, { JsonRpcProvider }] = await Promise.all([
+    const [{ Indexer, MemData }, { JsonRpcProvider }] = await Promise.all([
       import("@0gfoundation/0g-storage-ts-sdk"),
       import("ethers"),
     ]);
@@ -110,8 +110,8 @@ export class ZeroGCredentialArchive implements CredentialArchive {
       );
       const encryptionScope = proof.encryptionScope ?? "legacy-global";
       const encryptionKey =
-        encryptionScope === "owner-v1"
-          ? deriveIssuerEncryptionKey(this.config.encryptionKey, issuerId)
+        encryptionScope.startsWith("owner-")
+          ? deriveIssuerEncryptionKey(this.config.encryptionKey, issuerId, encryptionScope)
           : parseEncryptionKey(this.config.encryptionKey);
       const indexer = new Indexer(this.config.indexerUrl);
       const [blob, downloadError] = await withoutSdkDebugLogs(() =>
@@ -124,25 +124,32 @@ export class ZeroGCredentialArchive implements CredentialArchive {
         throw downloadError;
       }
 
+      const buffer = await blob.arrayBuffer();
       let credential: Credential | null = null;
       try {
-        credential = JSON.parse(await blob.text()) as Credential;
+        credential = JSON.parse(new TextDecoder().decode(buffer)) as Credential;
       } catch {
         // A wrong decryption key returns ciphertext rather than throwing.
       }
+
+      // Explicitly validate the Merkle tree of the downloaded data
+      // rather than blindly trusting the download call.
+      const file = new MemData(new Uint8Array(buffer));
+      const [tree, treeError] = await file.merkleTree();
+      const merkleProofVerified = !treeError && tree?.rootHash() === proof.rootHash;
 
       return {
         mode: "0g",
         transactionFinalized: receipt?.status === 1,
         blockNumber: receipt?.blockNumber,
-        merkleProofVerified: true,
+        merkleProofVerified,
         decryptionSucceeded: credential?.schema === "veritable.credential.v1",
         artifactHashMatched:
           credential?.artifact.sha256 === expectedArtifactHash,
         issuerMatched: credential?.issuerHash
           ? credential.issuerHash === hashIssuer(issuerId)
           : null,
-        encryptionScope,
+        encryptionScope: encryptionScope as "owner-v1" | "legacy-global",
         verifiedAt: new Date().toISOString(),
       };
     } finally {

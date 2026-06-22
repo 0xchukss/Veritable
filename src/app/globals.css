@@ -1,21 +1,34 @@
 @import "tailwindcss";
 
-:root {
-  --background: #08080b;
-  --foreground: #f7f4ee;
-  --muted: #a9a5ad;
-  --panel: rgba(21, 20, 26, 0.78);
-  --panel-strong: #17161c;
-  --line: rgba(255, 255, 255, 0.09);
-}
+/*
+ * Veritable — Confident Modern design system.
+ * Clean white canvas, ink type, single confident brand color (veritable blue),
+ * geometric blocks. No glassmorphism, no violet gradients.
+ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  --color-canvas: #ffffff;
+  --color-ink: #0a0a0f;
+  --color-ink-soft: #2a2a35;
+  --color-muted: #6b6b7a;
+  --color-line: #e8e8ee;
+  --color-line-strong: #d1d1dc;
+  --color-surface: #f7f7fa;
+  --color-surface-2: #f0f0f4;
+  --color-brand: #2563eb;
+  --color-brand-soft: #dbeafe;
+  --color-brand-deep: #1d4ed8;
+  --color-verified: #059669;
+  --color-verified-soft: #d1fae5;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono:
-    "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular,
-    monospace;
+  --font-display: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-card: 14px;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -23,24 +36,25 @@
 }
 
 html {
-  background: var(--background);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 20% 0%, rgba(125, 92, 255, 0.16), transparent 34rem),
-    radial-gradient(circle at 95% 18%, rgba(80, 214, 171, 0.1), transparent 28rem),
-    var(--background);
-  color: var(--foreground);
-  font-family: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+  color: inherit;
 }
 
 button {
@@ -48,12 +62,224 @@ button {
 }
 
 ::selection {
-  background: rgba(159, 135, 255, 0.35);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-deep);
 }
 
-.glass {
-  border: 1px solid var(--line);
-  background: var(--panel);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(24px);
+/* Bold display type for headlines */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01", "cv01";
+  letter-spacing: -0.03em;
+}
+
+/* Geometric block — the signature element */
+.block {
+  border: 1px solid var(--color-line);
+  background: var(--color-canvas);
+  border-radius: var(--radius-card);
+}
+
+.block-surface {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+}
+
+/* Primary action — confident, bold, geometric */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-ink);
+  transition: transform 0.15s var(--ease-out-soft), background 0.15s var(--ease-out-soft);
+}
+.btn-primary:hover {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--color-ink);
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-line-strong);
+  transition: border-color 0.15s var(--ease-out-soft), background 0.15s var(--ease-out-soft);
+}
+.btn-ghost:hover {
+  border-color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+/* Field inputs — flat, confident */
+.input,
+.textarea,
+.select {
+  width: 100%;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s var(--ease-out-soft);
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--color-brand);
+}
+
+/* Brand accent dot — the "verified" mark */
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.dot-brand { background: var(--color-brand); }
+.dot-verified { background: var(--color-verified); }
+.dot-danger { background: var(--color-danger); }
+
+/* Stamp — for the verification result */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stamp-verified {
+  background: var(--color-verified-soft);
+  color: var(--color-verified);
+}
+.stamp-pending {
+  background: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+.stamp-danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+/* Subtle grid background for the hero */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+}
+
+/* Dark dot grid — for content sections sitting on dark bg */
+.dot-grid-bg {
+  background-image: radial-gradient(circle, rgba(37,99,235,0.18) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Animated gradient mesh blobs — ambient glow behind the hero */
+.gradient-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.gradient-mesh::before,
+.gradient-mesh::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: meshDrift 14s ease-in-out infinite alternate;
+}
+.gradient-mesh::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #3b82f6, #1d4ed8, transparent 70%);
+  top: -150px;
+  left: -100px;
+  animation-delay: 0s;
+}
+.gradient-mesh::after {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, #6d28d9, #2563eb, transparent 70%);
+  bottom: -100px;
+  right: -80px;
+  animation-delay: -7s;
+}
+
+/* Section accent glow — dropped behind specific sections */
+.section-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.section-glow-blue::before {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(37,99,235,0.28), transparent 70%);
+  border-radius: 9999px;
+  filter: blur(60px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.section-glow-purple::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 250px;
+  background: radial-gradient(ellipse, rgba(109,40,217,0.22), transparent 70%);
+  border-radius: 9999px;
+  filter: blur(60px);
+  top: 50%;
+  left: 30%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes meshDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(40px, -30px) scale(1.08); }
+  66%  { transform: translate(-20px, 50px) scale(0.95); }
+  100% { transform: translate(30px, 20px) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

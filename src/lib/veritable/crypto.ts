@@ -8,20 +8,29 @@ import { ethers } from "ethers";
  * Storage.
  */
 export function deriveIssuerEncryptionKey(
-  masterKey: string,
+  masterKeyConfig: string,
   issuerId: string,
+  scope: string = "owner-v1",
 ): Uint8Array {
+  let masterKey = masterKeyConfig;
+  if (masterKeyConfig.trim().startsWith("{")) {
+    const keys = JSON.parse(masterKeyConfig);
+    masterKey = keys[scope] ?? keys["owner-v1"];
+    if (!masterKey) throw new Error(`No encryption key found for scope ${scope}`);
+  }
+
   const key = parseEncryptionKey(masterKey);
   return new Uint8Array(
     createHmac("sha256", key)
-      .update(`veritable-issuer-v1:${issuerId}`)
+      .update(`veritable-encryption-${scope}:${issuerId}`)
       .digest(),
   );
 }
 
 /** SHA-256 of the issuer id, for embedding (hashed) inside the encrypted bundle. */
 export function hashIssuer(issuerId: string): string {
-  return createHash("sha256").update(`veritable-issuer-v1:${issuerId}`).digest("hex");
+  // Use a different domain prefix than the encryption key derivation!
+  return createHash("sha256").update(`veritable-issuer-hash-v1:${issuerId}`).digest("hex");
 }
 
 /** SHA-256 of arbitrary bytes (an artifact), returned as hex without 0x. */

@@ -1,5 +1,5 @@
-import { VeritableApp } from "@/components/veritable-app";
+import { Landing } from "@/components/landing";
 
 export default function Home() {
-  return <VeritableApp />;
+  return <Landing />;
 }

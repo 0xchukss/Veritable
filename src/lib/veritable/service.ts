@@ -19,7 +19,7 @@ export async function issue(
   const archive = getArchive();
   const proof = await archive.archive(credential, input.issuer);
   const issued: IssuedCredential = { credential, proof };
-  remember(issued);
+  await remember(issued);
   return issued;
 }
 

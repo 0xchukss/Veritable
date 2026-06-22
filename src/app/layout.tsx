@@ -12,9 +12,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
+
 export const metadata: Metadata = {
-  title: "Veritable",
-  description: "Prove what's real in the AI age.",
+  title: "Veritable — Prove what's real in the AI age",
+  description:
+    "Veritable attaches cryptographically verifiable credentials to any AI artifact, anchored on the 0G network. Anyone can check what's real, independently.",
 };
 
 export default function RootLayout({
@@ -27,7 +30,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Credential {
+  id              String   @id
+  schema          String
+  issuer          String
+  issuerHash      String?
+  provenance      String
+  claim           String
+  model           String?
+  prompt          String?
+  issuedAt        DateTime
+
+  // Artifact fields
+  artifactId      String
+  contentType     String
+  kind            String
+  filename        String?
+  sha256          String
+  byteLength      Int
+
+  // Proof fields
+  proofMode            String
+  rootHash             String
+  transactionHash      String?
+  transactionUrl       String?
+  uploaderAddress      String?
+  chainId              String?
+  encryptionScope      String?
+  archivedAt           DateTime
+}

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 
 import { buildArtifact } from "@/lib/veritable/artifact";
 import { safeErrorMessage } from "@/lib/veritable/errors";
@@ -6,22 +7,18 @@ import { getEnv } from "@/lib/veritable/env";
 import { issue } from "@/lib/veritable/service";
 import { listCredentials } from "@/lib/veritable/store";
 import type { ProvenanceMethod } from "@/lib/veritable/types";
+import { checkRateLimit } from "@/lib/veritable/rate-limit";
 
 export const dynamic = "force-dynamic";
-
-const VALID_PROVENANCE: ProvenanceMethod[] = [
-  "ai-generated",
-  "human-authored",
-  "captured",
-];
 
 /**
  * GET /api/credentials — list credentials issued in this server's memory.
  * Phase 1 index only; the durable truth is the 0G archive, not this list.
  */
 export async function GET() {
+  const list = await listCredentials();
   return NextResponse.json({
-    credentials: listCredentials().map(({ credential, proof }) => ({
+    credentials: list.map(({ credential, proof }) => ({
       credential,
       proof,
     })),
@@ -29,21 +26,28 @@ export async function GET() {
   });
 }
 
+const MetadataSchema = z.object({
+  provenance: z.enum(["ai-generated", "human-authored", "captured"]),
+  claim: z.string().min(1, "claim is required.").max(280, "claim is too long."),
+  model: z.string().max(100, "model is too long.").optional(),
+  prompt: z.string().max(2000, "prompt is too long.").optional(),
+});
+
 /**
  * POST /api/credentials — issue a credential for an artifact.
- *
- * Accepts multipart/form-data:
- *   - artifact: File (binary) OR text: string (when no file)
- *   - contentType: string (required when sending text)
- *   - provenance: "ai-generated" | "human-authored" | "captured"
- *   - claim: string
- *   - model: string (optional)
- *   - prompt: string (optional)
- *   - issuer: string (optional; defaults to "anonymous")
- *
- * Returns the issued credential + its 0G storage proof.
  */
 export async function POST(request: NextRequest) {
+  // Derive a rate-limit key from the request IP (permissionless — no sign-in required).
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    request.headers.get("x-real-ip") ??
+    "anonymous";
+
+  // Rate limit: 5 requests per minute per IP
+  if (!checkRateLimit(ip, 5, 60000)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   let form: FormData;
   try {
     form = await request.formData();
@@ -54,28 +58,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const provenanceRaw = String(form.get("provenance") ?? "");
-  if (!VALID_PROVENANCE.includes(provenanceRaw as ProvenanceMethod)) {
-    return NextResponse.json(
-      {
-        error: `provenance must be one of: ${VALID_PROVENANCE.join(", ")}.`,
-      },
-      { status: 400 },
-    );
-  }
-  const provenance = provenanceRaw as ProvenanceMethod;
+  const parsed = MetadataSchema.safeParse({
+    provenance: form.get("provenance"),
+    claim: form.get("claim"),
+    model: form.get("model") || undefined,
+    prompt: form.get("prompt") || undefined,
+  });
 
-  const claim = String(form.get("claim") ?? "").trim();
-  if (!claim) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "claim is required." },
+      { error: parsed.error.issues[0]?.message || "Validation failed" },
       { status: 400 },
     );
   }
 
-  const issuer = String(form.get("issuer") ?? "anonymous").trim() || "anonymous";
-  const model = String(form.get("model") ?? "").trim() || undefined;
-  const prompt = String(form.get("prompt") ?? "").trim() || undefined;
+  const { provenance, claim, model, prompt } = parsed.data;
+  const issuer = `anon:${ip}`;
 
   // Accept either a binary file or inline text as the artifact.
   const file = form.get("artifact");
@@ -122,8 +120,6 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ credential: issued.credential, proof: issued.proof });
   } catch (error) {
-    // Sanitize: never surface raw upstream/SDK messages (may leak RPC URLs or
-    // internal detail). Map known recoverable states to honest user messages.
     const safe = safeErrorMessage(error, "Failed to commit the credential to storage.");
     return NextResponse.json({ error: safe }, { status: 502 });
   }
