@@ -34,12 +34,7 @@ export function Landing() {
           <div className="gradient-mesh" />
           <div className="grid-bg pointer-events-none absolute inset-0 h-[640px] opacity-30" />
           <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-6 pb-24 pt-20 text-center sm:pt-28">
-            <FadeUp>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-xs font-medium text-white/70 backdrop-blur-md">
-                <span className="dot dot-brand" />
-                Provenance for the AI era
-              </span>
-            </FadeUp>
+
 
             <FadeUp delay={0.05}>
               <h1 className="font-display mt-6 text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
@@ -264,7 +259,7 @@ function Footer() {
           <img src="/icon.png" alt="Veritable Logo" className="h-4 w-4 object-contain opacity-70 grayscale contrast-200 brightness-200" />
           <span className="font-semibold text-white">Veritable</span>
         </div>
-        <p>Provenance for the AI era · built on 0G</p>
+        <p>Built on 0G</p>
       </div>
     </footer>
   );
