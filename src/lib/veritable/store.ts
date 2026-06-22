@@ -18,6 +18,7 @@ function mapFromDb(row: any): IssuedCredential {
       claim: row.claim,
       model: row.model ?? undefined,
       prompt: row.prompt ?? undefined,
+      teeProof: row.teeProof ?? undefined,
       issuedAt: row.issuedAt.toISOString(),
       artifact: {
         id: row.artifactId,
@@ -53,6 +54,7 @@ export async function remember(issuedCredential: IssuedCredential): Promise<void
       claim: credential.claim,
       model: credential.model,
       prompt: credential.prompt,
+      teeProof: credential.teeProof,
       issuedAt: new Date(credential.issuedAt),
       artifactId: credential.artifact.id,
       contentType: credential.artifact.contentType,

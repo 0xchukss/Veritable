@@ -18,9 +18,11 @@ const envSchema = z
       .default("https://indexer-storage-testnet-turbo.0g.ai"),
     ZERO_G_CHAIN_EXPLORER_URL: z
       .string()
-      .url()
-      .default("https://chainscan-galileo.0g.ai"),
+      .default("https://chainscan-newton.0g.ai"),
     ZERO_G_CREDENTIAL_ENCRYPTION_KEY: z.string().optional(),
+    ZERO_G_COMPUTE_API_KEY: z.string().optional(),
+    ZERO_G_COMPUTE_BASE_URL: z.string().optional(),
+    ZERO_G_COMPUTE_MODEL: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     if (env.VERITABLE_STORAGE_MODE === "0g") {

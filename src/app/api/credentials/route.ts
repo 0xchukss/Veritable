@@ -31,6 +31,7 @@ const MetadataSchema = z.object({
   claim: z.string().min(1, "claim is required.").max(280, "claim is too long."),
   model: z.string().max(100, "model is too long.").optional(),
   prompt: z.string().max(2000, "prompt is too long.").optional(),
+  teeProof: z.string().max(2000, "teeProof is too long.").optional(),
 });
 
 /**
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
     claim: form.get("claim"),
     model: form.get("model") || undefined,
     prompt: form.get("prompt") || undefined,
+    teeProof: form.get("teeProof") || undefined,
   });
 
   if (!parsed.success) {
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { provenance, claim, model, prompt } = parsed.data;
+  const { provenance, claim, model, prompt, teeProof } = parsed.data;
   const issuer = `anon:${ip}`;
 
   // Accept either a binary file or inline text as the artifact.
@@ -117,6 +119,7 @@ export async function POST(request: NextRequest) {
       claim,
       model,
       prompt,
+      teeProof,
     });
     return NextResponse.json({ credential: issued.credential, proof: issued.proof });
   } catch (error) {

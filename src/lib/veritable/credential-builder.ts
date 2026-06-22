@@ -10,6 +10,7 @@ export interface IssueInput {
   claim: string;
   model?: string;
   prompt?: string;
+  teeProof?: string;
 }
 
 /** Construct a Credential object (schema-tagged, issuer-hashed). Pure + testable. */
@@ -24,6 +25,7 @@ export function buildCredential(input: IssueInput): Credential {
     claim: input.claim,
     model: input.model,
     prompt: input.prompt,
+    teeProof: input.teeProof,
     issuedAt: new Date().toISOString(),
   };
 }

@@ -50,6 +50,8 @@ export type Credential = {
   model?: string;
   /** If AI-generated: the prompt that produced it. Optional otherwise. */
   prompt?: string;
+  /** If AI-generated via 0G Compute: the TEE proof/request ID. Optional otherwise. */
+  teeProof?: string;
   /** ISO timestamp when the credential was issued (server time). */
   issuedAt: string;
 };

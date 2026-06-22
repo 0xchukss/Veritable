@@ -20,6 +20,7 @@ model Credential {
   claim           String
   model           String?
   prompt          String?
+  teeProof        String?
   issuedAt        DateTime
 
   // Artifact fields
