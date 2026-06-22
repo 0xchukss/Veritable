@@ -259,7 +259,7 @@ function Footer() {
           <img src="/icon.png" alt="Veritable Logo" className="h-4 w-4 object-contain opacity-70 grayscale contrast-200 brightness-200" />
           <span className="font-semibold text-white">Veritable</span>
         </div>
-        <p>Built on 0G</p>
+        <p>Provenance for the AI era · built on 0G</p>
       </div>
     </footer>
   );
