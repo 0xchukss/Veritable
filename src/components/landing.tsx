@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 
 import { Logo3DClient } from "./logo-3d-client";
 import { FadeUp, Stagger, staggerItem } from "./motion";
@@ -60,10 +60,10 @@ export function Landing() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="relative md:hidden">
+              <div className="md:hidden">
                 <button
                   type="button"
-                  aria-label="Open navigation menu"
+                  aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
                   aria-expanded={mobileMenuOpen}
                   aria-controls="mobile-navigation"
                   onClick={() => setMobileMenuOpen((open) => !open)}
@@ -71,25 +71,55 @@ export function Landing() {
                 >
                   ☰ Menu
                 </button>
-                {mobileMenuOpen && (
-                  <div id="mobile-navigation" className="absolute right-0 mt-2 grid min-w-44 gap-1 rounded-xl border border-white/10 bg-[#111117] p-2 shadow-2xl">
-                    <a onClick={() => setMobileMenuOpen(false)} href="#problem" className="landing-nav-link">Problem</a>
-                    <a onClick={() => setMobileMenuOpen(false)} href="#how-it-works" className="landing-nav-link">How it works</a>
-                    <a onClick={() => setMobileMenuOpen(false)} href="#why-0g" className="landing-nav-link">Why 0G</a>
-                    <Link onClick={() => setMobileMenuOpen(false)} href={LIVE_PROOF_URL} className="landing-nav-link">Live proof</Link>
-                    <a
-                      href="https://github.com/0xchukss/Veritable"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="landing-nav-link"
-                    >
-                      GitHub
-                    </a>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {mobileMenuOpen && (
+                    <div className="fixed inset-0 z-50 md:hidden">
+                      <button
+                        type="button"
+                        aria-label="Close navigation menu"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                      />
+                      <motion.nav
+                        id="mobile-navigation"
+                        aria-label="Mobile navigation"
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute right-0 top-0 flex h-full w-[82vw] max-w-sm flex-col border-l border-white/10 bg-[#0d0d12] p-6 shadow-2xl"
+                      >
+                        <div className="mb-8 flex items-center justify-between">
+                          <span className="font-semibold text-white">Veritable</span>
+                          <button
+                            type="button"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white/75"
+                          >
+                            Close
+                          </button>
+                        </div>
+                        <a onClick={() => setMobileMenuOpen(false)} href="#problem" className="landing-nav-link py-3 text-base">Problem</a>
+                        <a onClick={() => setMobileMenuOpen(false)} href="#how-it-works" className="landing-nav-link py-3 text-base">How it works</a>
+                        <a onClick={() => setMobileMenuOpen(false)} href="#why-0g" className="landing-nav-link py-3 text-base">Why 0G</a>
+                        <Link onClick={() => setMobileMenuOpen(false)} href="/app?demo=1" className="landing-nav-link py-3 text-base">One-click demo</Link>
+                        <Link onClick={() => setMobileMenuOpen(false)} href={LIVE_PROOF_URL} className="landing-nav-link py-3 text-base">Live proof</Link>
+                        <a
+                          onClick={() => setMobileMenuOpen(false)}
+                          href="https://github.com/0xchukss/Veritable"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="landing-nav-link py-3 text-base"
+                        >
+                          GitHub
+                        </a>
+                      </motion.nav>
+                    </div>
+                  )}
+                </AnimatePresence>
               </div>
-              <Link href="/app" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
-                Try it
+              <Link href="/app?demo=1" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
+                Try demo
               </Link>
             </div>
           </nav>
@@ -123,9 +153,15 @@ export function Landing() {
 
             <FadeUp delay={0.26}>
               <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-                <Link href="/app" className="btn-primary">
-                  Prove something
+                <Link href="/app?demo=1" className="btn-primary">
+                  See how it works
                   <span aria-hidden>→</span>
+                </Link>
+                <Link
+                  href="/app"
+                  className="btn-ghost !border-white/20 !text-white hover:!bg-white/10"
+                >
+                  Prove something
                 </Link>
                 <Link
                   href={LIVE_PROOF_URL}
@@ -311,8 +347,8 @@ export function Landing() {
               </p>
             </FadeUp>
             <FadeUp delay={0.16}>
-              <Link href="/app" className="btn-primary mt-8">
-                Try Veritable
+              <Link href="/app?demo=1" className="btn-primary mt-8">
+                Try the one-click demo
                 <span aria-hidden>→</span>
               </Link>
             </FadeUp>

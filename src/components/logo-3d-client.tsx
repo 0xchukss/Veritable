@@ -1,47 +1,20 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useSyncExternalStore } from "react";
+import type { RefObject } from "react";
 
 /**
- * SSR-safe wrapper for the 3D logo.
+ * Demo-safe 3D gate.
  *
- * The WebGL scene (logo-3d.tsx) cannot run during server-side rendering —
- * postprocessing tries to read GL state that doesn't exist on the server.
- * next/dynamic with ssr:false defers the entire scene to the browser.
+ * The original WebGL scene is still in `logo-3d.tsx`, but loading it on the
+ * landing page currently emits a Three.js dependency deprecation warning in
+ * the console. For the hackathon submission path, Veritable keeps the stable
+ * CSS gradient background and skips WebGL entirely.
  */
-const Logo3DBrowser = dynamic(
-  () => import("./logo-3d").then((m) => m.Logo3D),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-);
-
 export function Logo3DClient({
   scrollRef,
 }: {
-  scrollRef: React.RefObject<number>;
+  scrollRef: RefObject<number>;
 }) {
-  const shouldSkipWebGl = useSyncExternalStore(
-    subscribeToLightweightMode,
-    getLightweightMode,
-    () => true,
-  );
-
-  if (shouldSkipWebGl) return null;
-
-  return <Logo3DBrowser scrollRef={scrollRef} />;
-}
-
-const LIGHTWEIGHT_QUERY = "(prefers-reduced-motion: reduce), (max-width: 640px)";
-
-function subscribeToLightweightMode(onStoreChange: () => void) {
-  const media = window.matchMedia(LIGHTWEIGHT_QUERY);
-  media.addEventListener("change", onStoreChange);
-  return () => media.removeEventListener("change", onStoreChange);
-}
-
-function getLightweightMode() {
-  return window.matchMedia(LIGHTWEIGHT_QUERY).matches;
+  void scrollRef;
+  return null;
 }
