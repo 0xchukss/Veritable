@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
@@ -12,6 +12,7 @@ import { SiteFooter } from "./site-footer";
 const LIVE_PROOF_URL = "/verify/e0b9bad0-e83e-4a0d-85a1-fd929f2f0243";
 
 export function Landing() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollYProgress } = useScroll();
   // The 3D scene reads scroll from a plain ref each frame (no React re-renders).
   // We mirror Framer's MotionValue into it here.
@@ -59,28 +60,34 @@ export function Landing() {
             </div>
 
             <div className="flex items-center gap-2">
-              <details className="relative md:hidden">
-                <summary
+              <div className="relative md:hidden">
+                <button
+                  type="button"
                   aria-label="Open navigation menu"
+                  aria-expanded={mobileMenuOpen}
+                  aria-controls="mobile-navigation"
+                  onClick={() => setMobileMenuOpen((open) => !open)}
                   className="cursor-pointer list-none rounded-lg border border-white/15 px-3 py-2 text-sm text-white/75"
                 >
                   ☰ Menu
-                </summary>
-                <div className="absolute right-0 mt-2 grid min-w-44 gap-1 rounded-xl border border-white/10 bg-[#111117] p-2 shadow-2xl">
-                  <a href="#problem" className="landing-nav-link">Problem</a>
-                  <a href="#how-it-works" className="landing-nav-link">How it works</a>
-                  <a href="#why-0g" className="landing-nav-link">Why 0G</a>
-                  <Link href={LIVE_PROOF_URL} className="landing-nav-link">Live proof</Link>
-                  <a
-                    href="https://github.com/0xchukss/Veritable"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="landing-nav-link"
-                  >
-                    GitHub
-                  </a>
-                </div>
-              </details>
+                </button>
+                {mobileMenuOpen && (
+                  <div id="mobile-navigation" className="absolute right-0 mt-2 grid min-w-44 gap-1 rounded-xl border border-white/10 bg-[#111117] p-2 shadow-2xl">
+                    <a onClick={() => setMobileMenuOpen(false)} href="#problem" className="landing-nav-link">Problem</a>
+                    <a onClick={() => setMobileMenuOpen(false)} href="#how-it-works" className="landing-nav-link">How it works</a>
+                    <a onClick={() => setMobileMenuOpen(false)} href="#why-0g" className="landing-nav-link">Why 0G</a>
+                    <Link onClick={() => setMobileMenuOpen(false)} href={LIVE_PROOF_URL} className="landing-nav-link">Live proof</Link>
+                    <a
+                      href="https://github.com/0xchukss/Veritable"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="landing-nav-link"
+                    >
+                      GitHub
+                    </a>
+                  </div>
+                )}
+              </div>
               <Link href="/app" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
                 Try it
               </Link>
