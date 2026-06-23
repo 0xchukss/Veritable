@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { Nav } from "./nav";
 import { MotionShapes } from "./motion-shapes";
+import { SiteFooter } from "./site-footer";
 import type {
   Credential,
   ProvenanceMethod,
@@ -19,6 +20,7 @@ import type {
 
 type Issued = { credential: Credential; proof: StorageProof };
 type Mode = "idle" | "uploading" | "verifying";
+type IssueStage = 0 | 1 | 2 | 3;
 
 const SOFT = [0.22, 1, 0.36, 1] as const;
 
@@ -39,6 +41,7 @@ export function VeritableApp() {
   const [teeProof, setTeeProof] = useState("");
   const [computeReceipt, setComputeReceipt] = useState("");
   const [mode, setMode] = useState<Mode>("idle");
+  const [issueStage, setIssueStage] = useState<IssueStage>(0);
   const [generatePrompt, setGeneratePrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,9 +79,16 @@ export function VeritableApp() {
   const handleIssue = useCallback(async () => {
     if (!canSubmit) return;
     setMode("uploading");
+    setIssueStage(0);
     setError(null);
     setIssued(null);
     setVerification(null);
+
+    const stageTimers = [
+      setTimeout(() => setIssueStage(1), 500),
+      setTimeout(() => setIssueStage(2), 1400),
+      setTimeout(() => setIssueStage(3), 3600),
+    ];
 
     try {
       const form = new FormData();
@@ -104,6 +114,7 @@ export function VeritableApp() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
+      stageTimers.forEach(clearTimeout);
       setMode("idle");
     }
   }, [
@@ -329,6 +340,25 @@ export function VeritableApp() {
               </Field>
             )}
 
+            {provenance === "ai-generated" && (
+              <div
+                className={`rounded-xl border px-4 py-3 text-sm ${
+                  computeReceipt
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-amber-200 bg-amber-50 text-amber-800"
+                }`}
+              >
+                <span className="font-semibold">
+                  {computeReceipt
+                    ? "0G Compute provenance verified."
+                    : "Creator-declared AI provenance."}
+                </span>{" "}
+                {computeReceipt
+                  ? "The credential will include a model-bound TEE receipt."
+                  : "Use Generate & autofill to attach verifiable model and TEE evidence."}
+              </div>
+            )}
+
             <motion.button
               type="button"
               onClick={handleIssue}
@@ -345,9 +375,7 @@ export function VeritableApp() {
               )}
             </motion.button>
             {mode === "uploading" && (
-              <p className="text-center text-xs text-[var(--color-muted)]">
-                Uploading encrypted proof and submitting the 0G transaction.
-              </p>
+              <IssueProgress stage={issueStage} />
             )}
           </div>
         </motion.section>
@@ -372,6 +400,64 @@ export function VeritableApp() {
           )}
         </AnimatePresence>
       </main>
+      <div className="relative z-10">
+        <SiteFooter theme="light" />
+      </div>
+    </div>
+  );
+}
+
+const ISSUE_STAGES = [
+  "Hashing exact artifact bytes",
+  "Encrypting credential bundle",
+  "Uploading proof to 0G Storage",
+  "Anchoring transaction on 0G",
+] as const;
+
+function IssueProgress({ stage }: { stage: IssueStage }) {
+  return (
+    <div
+      aria-live="polite"
+      className="rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-4"
+    >
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+        Issuing credential
+      </p>
+      <ol className="grid gap-2 text-sm">
+        {ISSUE_STAGES.map((label, index) => {
+          const complete = index < stage;
+          const active = index === stage;
+          return (
+            <li
+              key={label}
+              className={`flex items-center gap-2 ${
+                active
+                  ? "font-medium text-[var(--color-ink)]"
+                  : complete
+                    ? "text-[var(--color-verified)]"
+                    : "text-[var(--color-muted)]"
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
+                  complete
+                    ? "bg-[var(--color-verified-soft)]"
+                    : active
+                      ? "bg-[var(--color-brand-soft)] text-[var(--color-brand)]"
+                      : "bg-white"
+                }`}
+              >
+                {complete ? "✓" : active ? <Spinner /> : index + 1}
+              </span>
+              {label}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="mt-3 text-xs text-[var(--color-muted)]">
+        Network confirmation usually takes several seconds. Keep this tab open.
+      </p>
     </div>
   );
 }
@@ -463,6 +549,19 @@ function ProofPanel({
           <span className={`dot ${isLocal ? "dot-brand" : "dot-verified"}`} />
           {isLocal ? "Local mode" : "Anchored on 0G"}
         </span>
+      </div>
+
+      <div
+        className={`mt-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+          credential.compute
+            ? "bg-[var(--color-verified-soft)] text-[var(--color-verified)]"
+            : "bg-amber-100 text-amber-800"
+        }`}
+      >
+        <span className={`dot ${credential.compute ? "dot-verified" : ""} ${credential.compute ? "" : "bg-amber-500"}`} />
+        {credential.compute
+          ? "0G Compute verified provenance"
+          : "Creator-declared provenance"}
       </div>
 
       <div className="mt-5 grid gap-3 text-sm">

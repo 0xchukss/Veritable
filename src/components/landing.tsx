@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 
 import { Logo3DClient } from "./logo-3d-client";
 import { FadeUp, Stagger, staggerItem } from "./motion";
+import { SiteFooter } from "./site-footer";
 
 export function Landing() {
   const { scrollYProgress } = useScroll();
@@ -17,17 +19,62 @@ export function Landing() {
   });
 
   return (
-    <div className="grid min-h-screen grid-cols-1 grid-rows-1 text-white bg-[#08080b]">
+    <div className="landing-shell grid min-h-screen grid-cols-1 grid-rows-1 bg-[#08080b] text-white">
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       {/* 3D Background Layer - Uses sticky instead of fixed to avoid mobile viewport and transform bugs */}
-      <div className="col-start-1 row-start-1 h-full w-full bg-[#08080b]">
-        <div className="sticky top-0 h-screen w-full overflow-hidden pointer-events-auto">
+      <div aria-hidden="true" className="col-start-1 row-start-1 h-full w-full">
+        <div className="landing-3d sticky top-0 h-screen w-full overflow-hidden pointer-events-auto">
           <Logo3DClient scrollRef={scrollRef} />
         </div>
       </div>
 
       {/* Content Layer */}
       <div className="col-start-1 row-start-1 relative z-10 flex flex-col pointer-events-none">
-        
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#08080b]/80 backdrop-blur-xl pointer-events-auto">
+          <nav
+            aria-label="Primary navigation"
+            className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6"
+          >
+            <Link href="/" className="flex items-center gap-2 font-semibold">
+              <Image src="/icon.png" alt="" width={20} height={20} />
+              Veritable
+            </Link>
+
+            <div className="hidden items-center gap-1 text-sm md:flex">
+              <a href="#problem" className="landing-nav-link">Problem</a>
+              <a href="#how-it-works" className="landing-nav-link">How it works</a>
+              <a href="#why-0g" className="landing-nav-link">Why 0G</a>
+              <a
+                href="https://github.com/0xchukss/Veritable"
+                target="_blank"
+                rel="noreferrer"
+                className="landing-nav-link"
+              >
+                GitHub
+              </a>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <details className="relative md:hidden">
+                <summary className="cursor-pointer list-none rounded-lg border border-white/15 px-3 py-2 text-sm text-white/75">
+                  Sections
+                </summary>
+                <div className="absolute right-0 mt-2 grid min-w-44 gap-1 rounded-xl border border-white/10 bg-[#111117] p-2 shadow-2xl">
+                  <a href="#problem" className="landing-nav-link">Problem</a>
+                  <a href="#how-it-works" className="landing-nav-link">How it works</a>
+                  <a href="#why-0g" className="landing-nav-link">Why 0G</a>
+                </div>
+              </details>
+              <Link href="/app" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
+                Try it
+              </Link>
+            </div>
+          </nav>
+        </header>
+
+        <main id="main-content">
         {/* HERO */}
         <section className="relative overflow-hidden border-b border-white/10 pointer-events-auto">
           {/* Animated gradient mesh blobs — sit behind the hero text, above the 3D */}
@@ -73,7 +120,7 @@ export function Landing() {
         </section>
 
         {/* PROBLEM */}
-        <section className="relative pointer-events-auto overflow-hidden bg-white/5 backdrop-blur-md border-b border-white/10">
+        <section id="problem" className="relative scroll-mt-16 pointer-events-auto overflow-hidden bg-white/5 backdrop-blur-md border-b border-white/10">
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-28">
             <FadeUp>
               <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-brand)]">
@@ -123,7 +170,7 @@ export function Landing() {
         </section>
 
         {/* HOW IT WORKS */}
-        <section className="relative border-b border-white/10 pointer-events-auto overflow-hidden">
+        <section id="how-it-works" className="relative scroll-mt-16 border-b border-white/10 pointer-events-auto overflow-hidden">
           <div className="section-glow section-glow-purple" />
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-28">
             <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
@@ -179,7 +226,7 @@ export function Landing() {
         </section>
 
         {/* WHY 0G */}
-        <section className="relative pointer-events-auto overflow-hidden bg-purple-900/20 backdrop-blur-lg border-b border-white/10">
+        <section id="why-0g" className="relative scroll-mt-16 pointer-events-auto overflow-hidden bg-purple-900/20 backdrop-blur-lg border-b border-white/10">
           <div className="section-glow section-glow-purple opacity-50" />
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-28">
             <FadeUp>
@@ -245,22 +292,12 @@ export function Landing() {
           </div>
         </section>
 
-        <Footer />
+        </main>
+
+        <div className="pointer-events-auto">
+          <SiteFooter theme="dark" />
+        </div>
       </div>
     </div>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="mx-auto w-full max-w-6xl px-6 py-10 pointer-events-auto">
-      <div className="flex flex-col items-center justify-between gap-4 text-sm text-white/40 sm:flex-row">
-        <div className="flex items-center gap-2">
-          <img src="/icon.png" alt="Veritable Logo" className="h-4 w-4 object-contain opacity-70 grayscale contrast-200 brightness-200" />
-          <span className="font-semibold text-white">Veritable</span>
-        </div>
-        <p>Provenance for the AI era · built on 0G</p>
-      </div>
-    </footer>
   );
 }

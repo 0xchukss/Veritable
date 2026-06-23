@@ -9,6 +9,7 @@ import type {
   PublicIssuedCredential,
 } from "@/lib/veritable/public-credential";
 import type { Verification } from "@/lib/veritable/types";
+import { SiteFooter } from "./site-footer";
 
 type VerifyResponse = {
   verification: Verification;
@@ -99,7 +100,7 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-12">
-        {loading && <p className="py-20 text-center text-white/50">Loading…</p>}
+        {loading && <VerificationSkeleton />}
         {error && (
           <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-300">
             {error}
@@ -122,6 +123,22 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
               <p className="mt-2 text-sm text-white/50">
                 ID {data.credential.id}
               </p>
+              <div
+                className={`mt-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  data.credential.compute
+                    ? "bg-emerald-400/10 text-emerald-300"
+                    : "bg-amber-400/10 text-amber-300"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    data.credential.compute ? "bg-emerald-400" : "bg-amber-400"
+                  }`}
+                />
+                {data.credential.compute
+                  ? "AI provenance verified by 0G Compute"
+                  : "Provenance declared by the credential issuer"}
+              </div>
             </div>
 
             <Card title="Artifact">
@@ -209,6 +226,18 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
           </motion.div>
         )}
       </main>
+      <SiteFooter theme="dark" />
+    </div>
+  );
+}
+
+function VerificationSkeleton() {
+  return (
+    <div aria-label="Loading credential" className="animate-pulse py-8">
+      <div className="h-3 w-40 rounded bg-white/10" />
+      <div className="mt-4 h-9 w-3/4 rounded bg-white/10" />
+      <div className="mt-8 h-64 rounded-xl border border-white/10 bg-white/5" />
+      <div className="mt-4 h-40 rounded-xl border border-white/10 bg-white/5" />
     </div>
   );
 }
