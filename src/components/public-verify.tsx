@@ -93,9 +93,14 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
             />
             Veritable
           </Link>
-          <span className="text-xs text-white/40">
-            Public verification · no account
-          </span>
+          <nav aria-label="Verification navigation" className="flex items-center gap-3 text-xs">
+            <Link href="/" className="text-white/55 transition hover:text-white">
+              Overview
+            </Link>
+            <Link href="/app?demo=1" className="rounded-lg bg-white px-3 py-2 font-semibold text-black transition hover:bg-white/90">
+              Demo
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -215,10 +220,10 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
                 </div>
                 {allPass && (
                   <Link
-                    href="/app"
+                    href="/app?demo=1"
                     className="mt-6 flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-white/90"
                   >
-                    Try Veritable yourself →
+                    Try the one-click demo →
                   </Link>
                 )}
               </div>

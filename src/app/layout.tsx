@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   title: "Veritable — Prove what's real in the AI age",
   description:
     "Veritable attaches cryptographically verifiable credentials to any AI artifact, anchored on the 0G network. Anyone can check what's real, independently.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

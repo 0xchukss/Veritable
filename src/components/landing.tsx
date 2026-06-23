@@ -119,7 +119,7 @@ export function Landing() {
                 </AnimatePresence>
               </div>
               <Link href="/app?demo=1" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
-                Try demo
+                Demo
               </Link>
             </div>
           </nav>
@@ -153,15 +153,15 @@ export function Landing() {
 
             <FadeUp delay={0.26}>
               <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-                <Link href="/app?demo=1" className="btn-primary">
+                <Link href="#how-it-works" className="btn-primary">
                   See how it works
                   <span aria-hidden>→</span>
                 </Link>
                 <Link
-                  href="/app"
+                  href="/app?demo=1"
                   className="btn-ghost !border-white/20 !text-white hover:!bg-white/10"
                 >
-                  Prove something
+                  Run one-click demo
                 </Link>
                 <Link
                   href={LIVE_PROOF_URL}
@@ -186,7 +186,7 @@ export function Landing() {
         <section id="problem" className="relative scroll-mt-16 pointer-events-auto overflow-hidden bg-white/5 backdrop-blur-md border-b border-white/10">
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-28">
             <FadeUp>
-              <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-brand)]">
+              <p className="text-sm font-semibold uppercase tracking-widest text-blue-300">
                 The problem
               </p>
             </FadeUp>
@@ -223,7 +223,7 @@ export function Landing() {
                 },
               ].map((c) => (
                 <motion.div key={c.k} variants={staggerItem} className="block !bg-white/5 !border-white/10 p-6 backdrop-blur-md">
-                  <span className="font-mono text-xs text-[var(--color-brand)]">{c.k}</span>
+                  <span className="font-mono text-xs text-blue-300">{c.k}</span>
                   <h3 className="mt-3 text-lg font-semibold text-white">{c.t}</h3>
                   <p className="mt-2 text-sm text-white/60">{c.d}</p>
                 </motion.div>
@@ -238,7 +238,7 @@ export function Landing() {
           <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-28">
             <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
               <FadeUp>
-                <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-brand)]">
+                <p className="text-sm font-semibold uppercase tracking-widest text-blue-300">
                   How it works
                 </p>
                 <h2 className="font-display mt-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
@@ -253,6 +253,13 @@ export function Landing() {
                   binding to 0G Storage. The proof is verifiable by anyone, with no
                   account and no middleman.
                 </p>
+                <Link
+                  href="/app?demo=1"
+                  className="btn-primary mt-8 !border-white !bg-white !text-black hover:!bg-white/90"
+                >
+                  Run the one-click demo
+                  <span aria-hidden>â†’</span>
+                </Link>
               </FadeUp>
 
               <Stagger className="flex flex-col gap-4">

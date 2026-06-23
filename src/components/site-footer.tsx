@@ -21,6 +21,9 @@ export function SiteFooter({ theme = "dark" }: { theme?: "dark" | "light" }) {
           <p className={`mt-2 text-sm ${dark ? "text-white/45" : "text-[var(--color-muted)]"}`}>
             Open-source provenance infrastructure, anchored on 0G.
           </p>
+          <p className={`mt-2 text-xs ${dark ? "text-white/35" : "text-[var(--color-muted)]"}`}>
+            © 2026 Veritable. Built for 0G Zero Cup.
+          </p>
         </div>
 
         <nav aria-label="Footer" className={`flex flex-wrap gap-x-5 gap-y-2 text-sm ${dark ? "text-white/60" : "text-[var(--color-muted)]"}`}>

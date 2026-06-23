@@ -27,6 +27,12 @@ export function Nav() {
 
         <div className="flex items-center gap-1 text-sm">
           <Link
+            href="/"
+            className="hidden rounded-lg px-3 py-2 font-medium text-[var(--color-muted)] transition hover:text-[var(--color-ink)] sm:inline-flex"
+          >
+            Overview
+          </Link>
+          <Link
             href="/#how-it-works"
             className="hidden rounded-lg px-3 py-2 font-medium text-[var(--color-muted)] transition hover:text-[var(--color-ink)] sm:inline-flex"
           >
@@ -36,7 +42,7 @@ export function Nav() {
             href="/app"
             className={`rounded-lg px-3 py-2 font-medium transition ${onApp ? "text-[var(--color-ink)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"}`}
           >
-            Prove it
+            Prove something
           </Link>
           <a
             href="https://github.com/0xchukss/Veritable"
