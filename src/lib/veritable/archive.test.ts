@@ -56,6 +56,47 @@ describe("LocalCredentialArchive tamper detection", () => {
     expect(result.artifactHashMatched).toBe(false);
   });
 
+  it("binds 0G Compute provenance to the exact generated output", async () => {
+    const archive = new LocalCredentialArchive(dir);
+    const bytes = new TextEncoder().encode("generated output");
+    const artifact = buildArtifact(bytes, "text/plain");
+    const credential = buildCredential({
+      artifact,
+      issuer: "issuer-a",
+      provenance: "ai-generated",
+      claim: "Generated and verified by 0G Compute",
+      compute: {
+        system: "0g-compute-router",
+        network: "testnet",
+        model: "model-a",
+        provider: "0x1111111111111111111111111111111111111111",
+        requestId: "request-1",
+        chatId: "chat-1",
+        promptHash: "a".repeat(64),
+        outputHash: artifact.sha256,
+        routerTeeVerified: true,
+        independentlyVerified: true,
+        modelVerified: true,
+        verifiedAt: new Date().toISOString(),
+      },
+    });
+
+    const proof = await archive.archive(credential, "issuer-a");
+    const original = await archive.verify(
+      proof,
+      "issuer-a",
+      artifact.sha256,
+    );
+    const forged = await archive.verify(
+      proof,
+      "issuer-a",
+      "f".repeat(64),
+    );
+
+    expect(original.computeProvenanceMatched).toBe(true);
+    expect(forged.computeProvenanceMatched).toBe(false);
+  });
+
   it("REJECTS a wrong issuer (cannot decrypt / issuer mismatch)", async () => {
     const archive = new LocalCredentialArchive(dir);
     const bytes = new TextEncoder().encode("artifact for issuer A");

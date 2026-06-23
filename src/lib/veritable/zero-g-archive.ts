@@ -7,7 +7,11 @@ import {
 } from "./crypto";
 import type { CredentialArchive } from "./archive-contract";
 import { withoutSdkDebugLogs } from "./sdk-logging";
-import type { Credential, StorageProof, Verification } from "./types";
+import type {
+  ArchiveVerification,
+  Credential,
+  StorageProof,
+} from "./types";
 
 /**
  * 0G Storage archive. The credential is encrypted with an issuer-derived AES
@@ -94,12 +98,12 @@ export class ZeroGCredentialArchive implements CredentialArchive {
     proof: StorageProof,
     issuerId: string,
     expectedArtifactHash: string,
-  ): Promise<Verification> {
+  ): Promise<ArchiveVerification> {
     if (!proof.transactionHash) {
       throw new Error("The storage proof does not include a transaction hash.");
     }
 
-    const [{ Indexer, MemData }, { JsonRpcProvider }] = await Promise.all([
+    const [{ Indexer }, { JsonRpcProvider }] = await Promise.all([
       import("@0gfoundation/0g-storage-ts-sdk"),
       import("ethers"),
     ]);
@@ -126,7 +130,7 @@ export class ZeroGCredentialArchive implements CredentialArchive {
 
       const buffer = await blob.arrayBuffer();
       let credential: Credential | null = null;
-      let merkleProofVerified = true; // SDK verifies the proof via { proof: true } during downloadToBlob
+      const merkleProofVerified = true; // SDK verifies the proof via { proof: true } during downloadToBlob
       
       try {
         const text = new TextDecoder().decode(buffer);
@@ -147,8 +151,14 @@ export class ZeroGCredentialArchive implements CredentialArchive {
         issuerMatched: credential?.issuerHash
           ? credential.issuerHash === hashIssuer(issuerId)
           : null,
+        computeProvenanceMatched: credential?.compute
+          ? credential.compute.outputHash === expectedArtifactHash
+          : null,
+        computeTeeVerified: null,
+        computeModelVerified: null,
         encryptionScope: encryptionScope as "owner-v1" | "legacy-global",
         verifiedAt: new Date().toISOString(),
+        archivedCredential: credential,
       };
     } finally {
       provider.destroy();

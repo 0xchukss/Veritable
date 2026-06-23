@@ -1,56 +1,70 @@
 # Veritable
 
-Prove what's real in the AI age.
+Prove what is real in the AI age.
 
-Veritable attaches cryptographically verifiable content credentials to any AI
-artifact — an image, a voice clip, a document — so anyone can independently
-confirm *what* it is, *which model* produced it, and *when* it was registered.
-The trust root lives on the 0G network, not on any single company's server.
-
-This repository was reset from an earlier prototype. The 0G plumbing (storage
-upload, Merkle-proof verification, owner-scoped encryption) is being rebuilt as
-a general-purpose provenance layer.
+Veritable attaches cryptographically verifiable content credentials to AI
+artifacts so anyone can confirm the exact artifact, its provenance, and the
+0G transaction that anchors the credential.
 
 ## Architecture
 
-- **Next.js App Router** for the product and server API.
-- **0G Storage** for immutable artifact + credential storage, verified by Merkle proof.
-- **0G Compute** for verifiable / TEE-backed inference provenance.
-- **0G Chain** for the credential registry (proof-of-existence).
-- **Optional Clerk identity** for user accounts.
+- Next.js App Router for the product and public verification API.
+- 0G Storage for encrypted credential storage and Merkle-proof downloads.
+- 0G Compute for independently verified TEE-backed inference provenance.
+- 0G Chain for storage transaction finality and proof-of-existence.
+- Postgres + Prisma for the shareable credential index. The credential itself
+  remains verifiable against 0G rather than trusting the index.
+
+## Phase 2 verification
+
+- Real forgery check: Veritable changes one decoded image pixel (or one byte
+  for another artifact), hashes the forged file, and runs the normal verifier.
+- Compute provenance: 0G Router runs with `verify_tee: true`. Veritable records
+  the Router's verified TEE trace, checks the provider's on-chain model metadata
+  with the official 0G Compute SDK, and binds both to the generated output hash.
+- Public verification: `/verify/:credentialId` works without an account.
+  Public responses expose an issuer fingerprint, not the raw issuer or prompt.
+  Credential enumeration is disabled.
 
 ## Run locally
 
 ```bash
 cp .env.example .env.local
+npm install
 npm run dev
 ```
 
 ## Enable real 0G
 
-1. Create and fund a Router API key at [0G Private Compute](https://pc.0g.ai).
-2. Fund a Galileo testnet wallet for Storage uploads.
-3. Set the following values in `.env.local`:
+1. Create a Router API key at [0G Private Compute](https://pc.0g.ai).
+2. Fund a Galileo testnet wallet for 0G Storage uploads.
+3. Provision Postgres and configure `.env.local`:
 
 ```bash
-ZERO_G_COMPUTE_API_KEY=sk-...
+DATABASE_URL=postgresql://...
+VERITABLE_STORAGE_MODE=0g
+
 ZERO_G_STORAGE_PRIVATE_KEY=0x...
-ZERO_G_STORAGE_RPC_URL=...
-ZERO_G_STORAGE_INDEXER_URL=...
-ZERO_G_STORAGE_EXPLORER_URL=...
-ZERO_G_MEMORY_ENCRYPTION_KEY=0x...
+ZERO_G_STORAGE_RPC_URL=https://evmrpc-testnet.0g.ai
+ZERO_G_STORAGE_INDEXER_URL=https://indexer-storage-testnet-turbo.0g.ai
+ZERO_G_CHAIN_EXPLORER_URL=https://chainscan-galileo.0g.ai
+ZERO_G_CREDENTIAL_ENCRYPTION_KEY=0x...
+
+ZERO_G_COMPUTE_API_KEY=sk-...
+ZERO_G_COMPUTE_BASE_URL=https://router-api-testnet.integratenetwork.work/v1
+ZERO_G_COMPUTE_MODEL=qwen/qwen2.5-omni-7b
+ZERO_G_COMPUTE_RPC_URL=https://evmrpc-testnet.0g.ai
+
+VERITABLE_RECEIPT_SECRET=...
 ```
 
-`ZERO_G_MEMORY_ENCRYPTION_KEY` must be a separate 32-byte hex key. Do not reuse
-the wallet private key.
-
-> Note: this key should be rotated before any deployment — it previously
-> appeared in local development logs in the prior prototype.
+`ZERO_G_CREDENTIAL_ENCRYPTION_KEY` and `VERITABLE_RECEIPT_SECRET` must be
+separate random 32-byte secrets. Do not reuse the wallet private key.
 
 ## Verification
 
 ```bash
 npm test
-npm run lint
+npx tsc --noEmit
 npm run build
 ```

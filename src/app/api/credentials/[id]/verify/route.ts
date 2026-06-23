@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { safeErrorMessage } from "@/lib/veritable/errors";
 import { getEnv } from "@/lib/veritable/env";
-import { verify } from "@/lib/veritable/service";
 import { getCredential } from "@/lib/veritable/store";
+import { verifyCredentialRequest } from "@/lib/veritable/verification-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -21,27 +21,20 @@ interface VerifyRouteContext {
  *
  * Returns the structured verification result.
  */
-export async function POST(_request: NextRequest, ctx: VerifyRouteContext) {
+export async function POST(request: NextRequest, ctx: VerifyRouteContext) {
   const { id } = await ctx.params;
-  const stored = await getCredential(id);
-  if (!stored) {
-    return NextResponse.json(
-      { error: "No credential found with that id." },
-      { status: 404 },
-    );
-  }
-
-  const { credential, proof } = stored;
   try {
-    const verification = await verify(
-      proof,
-      credential.issuer,
-      credential.artifact.sha256,
-    );
-    return NextResponse.json({ verification, proof });
+    const result = await verifyCredentialRequest(id, request);
+    if (!result) {
+      return NextResponse.json(
+        { error: "No credential found with that id." },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json(result);
   } catch (error) {
     const safe = safeErrorMessage(error, "Verification failed.");
-    return NextResponse.json({ error: safe, proof }, { status: 502 });
+    return NextResponse.json({ error: safe }, { status: 502 });
   }
 }
 

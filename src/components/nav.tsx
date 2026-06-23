@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,8 +11,17 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-canvas)]/85 backdrop-blur-md">
       <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-white">
-          <img src="/icon.png" alt="Veritable Logo" className="h-5 w-5 object-contain" />
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-semibold text-[var(--color-ink)]"
+        >
+          <Image
+            src="/icon.png"
+            alt="Veritable Logo"
+            width={20}
+            height={20}
+            className="object-contain"
+          />
           Veritable
         </Link>
 

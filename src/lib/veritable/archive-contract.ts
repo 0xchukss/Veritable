@@ -1,4 +1,8 @@
-import type { Credential, StorageProof, Verification } from "./types";
+import type {
+  ArchiveVerification,
+  Credential,
+  StorageProof,
+} from "./types";
 
 /**
  * The archive contract. Kept separate from both implementations so the local
@@ -11,5 +15,5 @@ export interface CredentialArchive {
     proof: StorageProof,
     issuerId: string,
     expectedArtifactHash: string,
-  ): Promise<Verification>;
+  ): Promise<ArchiveVerification>;
 }

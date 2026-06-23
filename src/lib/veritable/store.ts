@@ -1,13 +1,34 @@
 import "server-only";
 
-import { prisma } from "./db";
-import type { IssuedCredential, ArtifactKind, ProvenanceMethod } from "./types";
+import type { Credential as CredentialRow } from "@prisma/client";
+
+import { getPrisma } from "./db";
+import type {
+  ComputeProvenance,
+  IssuedCredential,
+  ArtifactKind,
+  ProvenanceMethod,
+} from "./types";
 
 // Re-export the pure builder so existing imports keep working.
 export { buildCredential } from "./credential-builder";
 export type { IssueInput } from "./credential-builder";
 
-function mapFromDb(row: any): IssuedCredential {
+function mapFromDb(row: CredentialRow): IssuedCredential {
+  let compute: ComputeProvenance | undefined;
+  let teeProof = row.teeProof ?? undefined;
+  if (typeof row.teeProof === "string" && row.teeProof.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(row.teeProof);
+      if (parsed?.version === 1 && parsed?.compute) {
+        compute = parsed.compute as ComputeProvenance;
+        teeProof = `request_id:${compute.requestId};provider:${compute.provider};chat_id:${compute.chatId}`;
+      }
+    } catch {
+      // Legacy free-form TEE proof; leave it unchanged.
+    }
+  }
+
   return {
     credential: {
       schema: row.schema as "veritable.credential.v1",
@@ -18,7 +39,8 @@ function mapFromDb(row: any): IssuedCredential {
       claim: row.claim,
       model: row.model ?? undefined,
       prompt: row.prompt ?? undefined,
-      teeProof: row.teeProof ?? undefined,
+      teeProof,
+      compute,
       issuedAt: row.issuedAt.toISOString(),
       artifact: {
         id: row.artifactId,
@@ -44,7 +66,7 @@ function mapFromDb(row: any): IssuedCredential {
 
 export async function remember(issuedCredential: IssuedCredential): Promise<void> {
   const { credential, proof } = issuedCredential;
-  await prisma.credential.create({
+  await getPrisma().credential.create({
     data: {
       id: credential.id,
       schema: credential.schema,
@@ -54,7 +76,9 @@ export async function remember(issuedCredential: IssuedCredential): Promise<void
       claim: credential.claim,
       model: credential.model,
       prompt: credential.prompt,
-      teeProof: credential.teeProof,
+      teeProof: credential.compute
+        ? JSON.stringify({ version: 1, compute: credential.compute })
+        : credential.teeProof,
       issuedAt: new Date(credential.issuedAt),
       artifactId: credential.artifact.id,
       contentType: credential.artifact.contentType,
@@ -75,12 +99,12 @@ export async function remember(issuedCredential: IssuedCredential): Promise<void
 }
 
 export async function getCredential(id: string): Promise<IssuedCredential | undefined> {
-  const row = await prisma.credential.findUnique({ where: { id } });
+  const row = await getPrisma().credential.findUnique({ where: { id } });
   return row ? mapFromDb(row) : undefined;
 }
 
 export async function listCredentials(): Promise<IssuedCredential[]> {
-  const rows = await prisma.credential.findMany({
+  const rows = await getPrisma().credential.findMany({
     orderBy: { issuedAt: "desc" },
   });
   return rows.map(mapFromDb);

@@ -4,7 +4,11 @@ import path from "node:path";
 
 import { hashIssuer } from "./crypto";
 import type { CredentialArchive } from "./archive-contract";
-import type { Credential, StorageProof, Verification } from "./types";
+import type {
+  ArchiveVerification,
+  Credential,
+  StorageProof,
+} from "./types";
 
 /**
  * Local-only archive for development when no 0G credentials are configured.
@@ -44,7 +48,7 @@ export class LocalCredentialArchive implements CredentialArchive {
     proof: StorageProof,
     issuerId: string,
     expectedArtifactHash: string,
-  ): Promise<Verification> {
+  ): Promise<ArchiveVerification> {
     const digest = proof.rootHash.replace(/^local:/, "");
     const raw = await readFile(
       path.join(this.archiveDirectory, `${digest}.json`),
@@ -61,8 +65,14 @@ export class LocalCredentialArchive implements CredentialArchive {
       issuerMatched: credential.issuerHash
         ? credential.issuerHash === hashIssuer(issuerId)
         : null,
+      computeProvenanceMatched: credential.compute
+        ? credential.compute.outputHash === expectedArtifactHash
+        : null,
+      computeTeeVerified: null,
+      computeModelVerified: null,
       encryptionScope: proof.encryptionScope ?? "legacy-global",
       verifiedAt: new Date().toISOString(),
+      archivedCredential: credential,
     };
   }
 }

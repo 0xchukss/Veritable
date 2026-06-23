@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 
 import { hashIssuer } from "./crypto";
-import type { Credential, ProvenanceMethod } from "./types";
+import type {
+  ComputeProvenance,
+  Credential,
+  ProvenanceMethod,
+} from "./types";
 
 export interface IssueInput {
   artifact: Credential["artifact"];
@@ -11,6 +15,7 @@ export interface IssueInput {
   model?: string;
   prompt?: string;
   teeProof?: string;
+  compute?: ComputeProvenance;
 }
 
 /** Construct a Credential object (schema-tagged, issuer-hashed). Pure + testable. */
@@ -26,6 +31,7 @@ export function buildCredential(input: IssueInput): Credential {
     model: input.model,
     prompt: input.prompt,
     teeProof: input.teeProof,
+    compute: input.compute,
     issuedAt: new Date().toISOString(),
   };
 }

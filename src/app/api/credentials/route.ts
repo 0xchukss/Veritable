@@ -2,11 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 import { buildArtifact } from "@/lib/veritable/artifact";
+import { sha256Hex } from "@/lib/veritable/crypto";
+import { verifyComputeReceipt } from "@/lib/veritable/compute-receipt";
 import { safeErrorMessage } from "@/lib/veritable/errors";
-import { getEnv } from "@/lib/veritable/env";
+import { getReceiptSecret } from "@/lib/veritable/env";
 import { issue } from "@/lib/veritable/service";
-import { listCredentials } from "@/lib/veritable/store";
-import type { ProvenanceMethod } from "@/lib/veritable/types";
+import type { ComputeProvenance } from "@/lib/veritable/types";
 import { checkRateLimit } from "@/lib/veritable/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -16,14 +17,13 @@ export const dynamic = "force-dynamic";
  * Phase 1 index only; the durable truth is the 0G archive, not this list.
  */
 export async function GET() {
-  const list = await listCredentials();
-  return NextResponse.json({
-    credentials: list.map(({ credential, proof }) => ({
-      credential,
-      proof,
-    })),
-    storageMode: getEnv().VERITABLE_STORAGE_MODE,
-  });
+  return NextResponse.json(
+    {
+      error:
+        "Credential enumeration is disabled. Use a direct /verify/:id link.",
+    },
+    { status: 410 },
+  );
 }
 
 const MetadataSchema = z.object({
@@ -31,7 +31,7 @@ const MetadataSchema = z.object({
   claim: z.string().min(1, "claim is required.").max(280, "claim is too long."),
   model: z.string().max(100, "model is too long.").optional(),
   prompt: z.string().max(2000, "prompt is too long.").optional(),
-  teeProof: z.string().max(2000, "teeProof is too long.").optional(),
+  computeReceipt: z.string().max(12_000, "compute receipt is too long.").optional(),
 });
 
 /**
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     claim: form.get("claim"),
     model: form.get("model") || undefined,
     prompt: form.get("prompt") || undefined,
-    teeProof: form.get("teeProof") || undefined,
+    computeReceipt: form.get("computeReceipt") || undefined,
   });
 
   if (!parsed.success) {
@@ -74,7 +74,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { provenance, claim, model, prompt, teeProof } = parsed.data;
+  const {
+    provenance,
+    claim,
+    model: assertedModel,
+    prompt,
+    computeReceipt,
+  } = parsed.data;
   const issuer = `anon:${ip}`;
 
   // Accept either a binary file or inline text as the artifact.
@@ -112,6 +118,60 @@ export async function POST(request: NextRequest) {
   const artifact = buildArtifact(bytes, contentType, filename);
 
   try {
+    let model = assertedModel;
+    let teeProof: string | undefined;
+    let compute: ComputeProvenance | undefined;
+
+    if (computeReceipt) {
+      if (provenance !== "ai-generated") {
+        return NextResponse.json(
+          { error: "0G Compute receipts require AI-generated provenance." },
+          { status: 400 },
+        );
+      }
+
+      const receipt = verifyComputeReceipt(
+        computeReceipt,
+        getReceiptSecret(),
+      );
+      if (receipt.outputHash !== artifact.sha256) {
+        return NextResponse.json(
+          {
+            error:
+              "The generated artifact was changed after 0G Compute verified it. Generate it again or issue it without a compute claim.",
+          },
+          { status: 409 },
+        );
+      }
+      if (
+        prompt &&
+        receipt.promptHash !== sha256Hex(new TextEncoder().encode(prompt))
+      ) {
+        return NextResponse.json(
+          { error: "The prompt does not match the signed 0G Compute receipt." },
+          { status: 409 },
+        );
+      }
+
+      model = receipt.model;
+      teeProof = `request_id:${receipt.requestId};provider:${receipt.provider};chat_id:${receipt.chatId}`;
+      compute = {
+        system: receipt.system,
+        network: receipt.network,
+        model: receipt.model,
+        responseModel: receipt.responseModel,
+        provider: receipt.provider,
+        requestId: receipt.requestId,
+        chatId: receipt.chatId,
+        promptHash: receipt.promptHash,
+        outputHash: receipt.outputHash,
+        routerTeeVerified: receipt.routerTeeVerified,
+        independentlyVerified: receipt.independentlyVerified,
+        modelVerified: receipt.modelVerified,
+        verifiedAt: receipt.verifiedAt,
+      };
+    }
+
     const issued = await issue({
       artifact,
       issuer,
@@ -120,6 +180,7 @@ export async function POST(request: NextRequest) {
       model,
       prompt,
       teeProof,
+      compute,
     });
     return NextResponse.json({ credential: issued.credential, proof: issued.proof });
   } catch (error) {

@@ -6,6 +6,7 @@ import {
   remember,
   type IssueInput,
 } from "./store";
+import { verifyComputeProvider } from "./compute-verification";
 import type { IssuedCredential, StorageProof, Verification } from "./types";
 
 /**
@@ -34,5 +35,34 @@ export async function verify(
   expectedArtifactHash: string,
 ): Promise<Verification> {
   const archive = getArchive();
-  return archive.verify(proof, issuerId, expectedArtifactHash);
+  const archiveResult = await archive.verify(
+    proof,
+    issuerId,
+    expectedArtifactHash,
+  );
+  const { archivedCredential, ...verification } = archiveResult;
+  const compute = archivedCredential?.compute;
+
+  if (!compute) {
+    return verification;
+  }
+
+  try {
+    const fresh = await verifyComputeProvider(
+      compute.provider,
+      compute.model,
+    );
+    return {
+      ...verification,
+      computeTeeVerified: compute.routerTeeVerified,
+      computeModelVerified: fresh.modelVerified,
+    };
+  } catch (error) {
+    console.error("0G Compute provenance re-verification failed:", error);
+    return {
+      ...verification,
+      computeTeeVerified: compute.routerTeeVerified,
+      computeModelVerified: false,
+    };
+  }
 }
