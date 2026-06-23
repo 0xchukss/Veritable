@@ -305,7 +305,7 @@ export function Logo3D({
   return (
     <div className={className || "pointer-events-auto fixed inset-0 z-0 h-screen w-screen"}>
       <Canvas
-        shadows
+        shadows="basic"
         dpr={[1, 1.8]}
         camera={{ position: [4.2, 1.1, 0], fov: 38 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance", preserveDrawingBuffer: true }}

@@ -9,6 +9,8 @@ import { Logo3DClient } from "./logo-3d-client";
 import { FadeUp, Stagger, staggerItem } from "./motion";
 import { SiteFooter } from "./site-footer";
 
+const LIVE_PROOF_URL = "/verify/e0b9bad0-e83e-4a0d-85a1-fd929f2f0243";
+
 export function Landing() {
   const { scrollYProgress } = useScroll();
   // The 3D scene reads scroll from a plain ref each frame (no React re-renders).
@@ -58,13 +60,25 @@ export function Landing() {
 
             <div className="flex items-center gap-2">
               <details className="relative md:hidden">
-                <summary className="cursor-pointer list-none rounded-lg border border-white/15 px-3 py-2 text-sm text-white/75">
-                  Sections
+                <summary
+                  aria-label="Open navigation menu"
+                  className="cursor-pointer list-none rounded-lg border border-white/15 px-3 py-2 text-sm text-white/75"
+                >
+                  ☰ Menu
                 </summary>
                 <div className="absolute right-0 mt-2 grid min-w-44 gap-1 rounded-xl border border-white/10 bg-[#111117] p-2 shadow-2xl">
                   <a href="#problem" className="landing-nav-link">Problem</a>
                   <a href="#how-it-works" className="landing-nav-link">How it works</a>
                   <a href="#why-0g" className="landing-nav-link">Why 0G</a>
+                  <Link href={LIVE_PROOF_URL} className="landing-nav-link">Live proof</Link>
+                  <a
+                    href="https://github.com/0xchukss/Veritable"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="landing-nav-link"
+                  >
+                    GitHub
+                  </a>
                 </div>
               </details>
               <Link href="/app" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
@@ -106,15 +120,21 @@ export function Landing() {
                   Prove something
                   <span aria-hidden>→</span>
                 </Link>
-                <a
-                  href="https://chainscan-galileo.0g.ai"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href={LIVE_PROOF_URL}
                   className="btn-ghost !border-white/20 !text-white hover:!bg-white/10"
                 >
-                  See it on-chain
-                </a>
+                  View live proof
+                </Link>
               </div>
+              <a
+                href="https://chainscan-galileo.0g.ai"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex text-sm text-white/50 underline-offset-4 transition hover:text-white hover:underline"
+              >
+                Or inspect the 0G chain directly ↗
+              </a>
             </FadeUp>
           </div>
         </section>

@@ -30,6 +30,12 @@ const PROVENANCE_OPTIONS: { value: ProvenanceMethod; label: string }[] = [
   { value: "captured", label: "Captured (photo/recording)" },
 ];
 
+const EXAMPLE_ARTIFACT =
+  "Field note: The blue lantern was photographed beside the old station at 18:42 UTC.";
+const EXAMPLE_CLAIM = "Human-authored field note, recorded without AI generation";
+const EXAMPLE_COMPUTE_PROMPT =
+  "Write one concise sentence explaining why verifiable AI provenance matters.";
+
 export function VeritableApp() {
   const [provenance, setProvenance] = useState<ProvenanceMethod>("ai-generated");
   const [claim, setClaim] = useState("");
@@ -75,6 +81,19 @@ export function VeritableApp() {
     mode === "idle" &&
     claim.trim().length > 0 &&
     (file !== null || text.trim().length > 0);
+  const provenanceConflict = getProvenanceConflict(claim, provenance);
+
+  const loadExample = () => {
+    setFile(null);
+    setText(EXAMPLE_ARTIFACT);
+    setClaim(EXAMPLE_CLAIM);
+    setProvenance("human-authored");
+    setModel("");
+    setPrompt("");
+    setTeeProof("");
+    setComputeReceipt("");
+    reset();
+  };
 
   const handleIssue = useCallback(async () => {
     if (!canSubmit) return;
@@ -184,9 +203,12 @@ export function VeritableApp() {
 
   return (
     <div className="flex min-h-screen flex-col relative overflow-hidden bg-white">
+      <a href="#credential-form" className="skip-link">
+        Skip to credential form
+      </a>
       <MotionShapes />
       <Nav />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12 relative z-10">
+      <main id="credential-form" className="mx-auto w-full max-w-3xl flex-1 scroll-mt-20 px-6 py-12 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -199,6 +221,19 @@ export function VeritableApp() {
             Attach an artifact and provenance. Veritable commits it to 0G Storage
             and returns a tamper-evident credential anchored on the 0G chain.
           </p>
+          <div className="mt-6 flex flex-col gap-3 rounded-xl border border-[var(--color-brand)]/20 bg-[var(--color-brand-soft)]/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold text-[var(--color-ink)]">
+                Want the fastest demo?
+              </p>
+              <p className="mt-1 text-sm text-[var(--color-muted)]">
+                Prefill an example, issue it, then run the one-byte forgery test.
+              </p>
+            </div>
+            <button type="button" onClick={loadExample} className="btn-ghost shrink-0">
+              Prefill example
+            </button>
+          </div>
         </motion.div>
 
         <AnimatePresence>
@@ -207,6 +242,7 @@ export function VeritableApp() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
+              role="alert"
               className="mt-6 overflow-hidden rounded-xl border border-[var(--color-danger-soft)] bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-[var(--color-danger)]"
             >
               {error}
@@ -231,7 +267,7 @@ export function VeritableApp() {
 
             <div className="rounded-xl border border-[var(--color-brand)]/20 bg-[var(--color-brand-soft)]/10 p-4">
               <Field label="Or generate text with 0G Compute">
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <input
                     type="text"
                     value={generatePrompt}
@@ -239,6 +275,7 @@ export function VeritableApp() {
                     placeholder="Ask the AI to write something..."
                     className="input flex-1"
                     disabled={isGenerating}
+                    aria-describedby="compute-help"
                   />
                   <button
                     type="button"
@@ -250,6 +287,18 @@ export function VeritableApp() {
                   </button>
                 </div>
               </Field>
+              <div id="compute-help" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--color-muted)]">
+                <span>
+                  Enter a prompt to activate 0G Compute and attach a verified TEE receipt.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setGeneratePrompt(EXAMPLE_COMPUTE_PROMPT)}
+                  className="font-semibold text-[var(--color-brand)] underline-offset-2 hover:underline"
+                >
+                  Use example prompt
+                </button>
+              </div>
             </div>
 
             <Field label="What does this credential claim?">
@@ -295,6 +344,23 @@ export function VeritableApp() {
                 />
               </Field>
             </div>
+
+            {provenanceConflict && (
+              <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <span className="font-semibold">Check the provenance.</span>{" "}
+                {provenanceConflict.message}{" "}
+                <button
+                  type="button"
+                  onClick={() => setProvenance(provenanceConflict.suggested)}
+                  className="font-semibold underline underline-offset-2"
+                >
+                  Set it to{" "}
+                  {PROVENANCE_OPTIONS.find(
+                    (option) => option.value === provenanceConflict.suggested,
+                  )?.label}
+                </button>
+              </div>
+            )}
 
             {provenance === "ai-generated" && (
               <div className="grid gap-5 sm:grid-cols-2">
@@ -493,7 +559,10 @@ function ArtifactInput({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
 }) {
   return (
-    <div className="flex flex-col gap-3">
+    <fieldset className="flex flex-col gap-3">
+      <legend className="mb-1 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+        Artifact to prove
+      </legend>
       <div className="flex gap-2">
         <button
           type="button"
@@ -503,6 +572,7 @@ function ArtifactInput({
           {file ? file.name : "Choose file…"}
         </button>
         <input
+          id="artifact-file"
           ref={fileInputRef}
           type="file"
           className="hidden"
@@ -512,14 +582,18 @@ function ArtifactInput({
           or paste text
         </span>
       </div>
+      <label htmlFor="artifact-text" className="sr-only">
+        Artifact text
+      </label>
       <textarea
+        id="artifact-text"
         value={text}
         onChange={(e) => onPickText(e.target.value)}
         placeholder="Paste the artifact text here (or choose a file above)…"
         rows={4}
         className="textarea resize-y"
       />
-    </div>
+    </fieldset>
   );
 }
 
@@ -627,6 +701,7 @@ function ProofPanel({
       </AnimatePresence>
 
       <ShareLink credentialId={credential.id} />
+      <DownloadReceipt issued={issued} />
       <TamperDemo
         credentialId={credential.id}
         artifactHash={credential.artifact.sha256}
@@ -635,6 +710,57 @@ function ProofPanel({
       />
     </section>
   );
+}
+
+function DownloadReceipt({ issued }: { issued: Issued }) {
+  const download = () => {
+    const blob = new Blob([JSON.stringify(issued, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `veritable-${issued.credential.id}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <button type="button" onClick={download} className="btn-ghost mt-3 w-full">
+      Download credential receipt
+    </button>
+  );
+}
+
+function getProvenanceConflict(
+  claim: string,
+  provenance: ProvenanceMethod,
+): { message: string; suggested: ProvenanceMethod } | null {
+  const normalized = claim.toLowerCase();
+  const saysHuman =
+    normalized.includes("human-authored") ||
+    normalized.includes("human authored") ||
+    normalized.includes("written by a human");
+  const saysAi =
+    normalized.includes("ai-generated") ||
+    normalized.includes("ai generated") ||
+    normalized.includes("generated by ai");
+
+  if (saysHuman && provenance === "ai-generated") {
+    return {
+      message:
+        "Your claim says human-authored, but the selected provenance is AI-generated.",
+      suggested: "human-authored",
+    };
+  }
+  if (saysAi && provenance === "human-authored") {
+    return {
+      message:
+        "Your claim says AI-generated, but the selected provenance is human-authored.",
+      suggested: "ai-generated",
+    };
+  }
+  return null;
 }
 
 function VerificationResult({ v }: { v: Verification }) {
@@ -756,6 +882,7 @@ function ShareLink({ credentialId }: { credentialId: string }) {
         <input
           readOnly
           value={url}
+          aria-label="Public verification URL"
           className="input flex-1 text-xs font-mono"
           onClick={(e) => (e.target as HTMLInputElement).select()}
         />
