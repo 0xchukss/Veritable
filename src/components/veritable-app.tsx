@@ -338,7 +338,7 @@ export function VeritableApp() {
             >
               {mode === "uploading" ? (
                 <>
-                  <Spinner /> Committing to 0G…
+                  <Spinner /> Submitting to 0G…
                 </>
               ) : (
                 <>Issue credential on 0G</>
@@ -346,7 +346,7 @@ export function VeritableApp() {
             </motion.button>
             {mode === "uploading" && (
               <p className="text-center text-xs text-[var(--color-muted)]">
-                Real storage upload + chain finality. This takes ~15–30s.
+                Uploading encrypted proof and submitting the 0G transaction.
               </p>
             )}
           </div>

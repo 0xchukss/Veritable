@@ -62,7 +62,10 @@ export class ZeroGCredentialArchive implements CredentialArchive {
       const [result, uploadError] = await withoutSdkDebugLogs(() =>
         indexer.upload(file, this.config.rpcUrl, signer, {
           expectedReplica: 1,
-          finalityRequired: true,
+          // Verification checks chain finality separately. Returning after the
+          // encrypted segments are uploaded avoids holding the issuance UI open
+          // while testnet finality is slow.
+          finalityRequired: false,
           encryption: { type: "aes256", key: encryptionKey },
         }),
       );

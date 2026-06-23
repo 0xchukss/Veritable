@@ -19,7 +19,6 @@ type VerifyResponse = {
 export function PublicVerify({ credentialId }: { credentialId: string }) {
   const [data, setData] = useState<PublicIssuedCredential | null>(null);
   const [verification, setVerification] = useState<Verification | null>(null);
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,14 +48,9 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
     setVerifying(true);
     setError(null);
     try {
-      let body: FormData | undefined;
-      if (file) {
-        body = new FormData();
-        body.set("artifact", file, file.name);
-      }
       const response = await fetch(
         `/api/public/credentials/${credentialId}`,
-        { method: "POST", body },
+        { method: "POST" },
       );
       const result = (await response.json()) as VerifyResponse & {
         error?: string;
@@ -72,7 +66,7 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
     } finally {
       setVerifying(false);
     }
-  }, [credentialId, file]);
+  }, [credentialId]);
 
   const allPass = verification
     ? verification.merkleProofVerified &&
@@ -172,21 +166,6 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
               )}
             </Card>
 
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-5">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-white/40">
-                Optional: check your copy of the artifact
-              </label>
-              <input
-                type="file"
-                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                className="mt-3 block w-full text-sm text-white/60"
-              />
-              <p className="mt-2 text-xs text-white/40">
-                Without a file, Veritable checks the archived credential and
-                0G proofs. With a file, it also hashes your exact bytes.
-              </p>
-            </div>
-
             <button
               type="button"
               onClick={verify}
@@ -217,6 +196,14 @@ export function PublicVerify({ credentialId }: { credentialId: string }) {
                     <Check label="Provider model verified on-chain" ok={verification.computeModelVerified} />
                   )}
                 </div>
+                {allPass && (
+                  <Link
+                    href="/app"
+                    className="mt-6 flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-white/90"
+                  >
+                    Try Veritable yourself →
+                  </Link>
+                )}
               </div>
             )}
           </motion.div>
