@@ -36,6 +36,9 @@ export function SiteFooter({ theme = "dark" }: { theme?: "dark" | "light" }) {
           <a className="transition hover:text-[var(--color-brand)]" href="https://chainscan-galileo.0g.ai" target="_blank" rel="noreferrer">
             Explorer
           </a>
+          <Link className="transition hover:text-[var(--color-brand)]" href="/roadmap">
+            Roadmap
+          </Link>
           <Link className="transition hover:text-[var(--color-brand)]" href="/privacy">
             Privacy
           </Link>

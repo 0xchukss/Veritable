@@ -339,59 +339,6 @@ export function Landing() {
           </div>
         </section>
 
-        {/* COMMERCIAL PATH */}
-        <section className="relative border-b border-white/10 pointer-events-auto overflow-hidden bg-black/30">
-          <div className="section-glow section-glow-blue opacity-60" />
-          <div className="mx-auto w-full max-w-6xl px-6 py-20 sm:py-28">
-            <FadeUp>
-              <p className="text-sm font-semibold uppercase tracking-widest text-blue-300">
-                Commercial path
-              </p>
-            </FadeUp>
-            <FadeUp delay={0.05}>
-              <h2 className="font-display mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl">
-                From technical validation to provenance infrastructure.
-              </h2>
-            </FadeUp>
-            <FadeUp delay={0.1}>
-              <p className="mt-6 max-w-3xl text-lg text-white/60">
-                Veritable starts as 0G-backed technical validation. The
-                commercial path is a SaaS and API layer for AI agencies,
-                creative studios, brands, and platforms that need public proof
-                pages for digital content.
-              </p>
-            </FadeUp>
-
-            <Stagger className="mt-12 grid gap-5 md:grid-cols-3">
-              {[
-                {
-                  t: "Proof issuance API",
-                  d: "Platforms and AI tools can issue Veritable credentials programmatically after content is generated or published.",
-                },
-                {
-                  t: "Branded verification pages",
-                  d: "Teams can share public proof links with clients, users, and audiences without exposing 0G complexity.",
-                },
-                {
-                  t: "Team proof dashboard",
-                  d: "Organizations can manage credential history, issuers, artifacts, and verification activity from one workspace.",
-                },
-              ].map((c) => (
-                <motion.div
-                  key={c.t}
-                  variants={staggerItem}
-                  className="block !border-white/10 !bg-white/5 p-6 backdrop-blur-md"
-                >
-                  <h3 className="text-lg font-semibold text-white">{c.t}</h3>
-                  <p className="mt-2 text-sm text-white/60">{c.d}</p>
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-blue-300">
-                    Roadmap
-                  </p>
-                </motion.div>
-              ))}
-            </Stagger>
-          </div>
-        </section>
         {/* CTA */}
         <section className="relative border-b border-white/10 pointer-events-auto overflow-hidden">
           <div className="gradient-mesh" />
